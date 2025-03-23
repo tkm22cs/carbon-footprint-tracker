@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack | Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard-page">
+    <div class="dashboard-container">
+        <header class="app-header">
+            <div class="header-logo">
+                <h1>🌍 EcoTrack</h1>
+                <p id="welcomeMessage">Welcome!</p>
+            </div>
+            <button id="logoutBtn" class="logout-button">Logout</button>
+        </header>
+
+        <main class="dashboard-content">
+            <!-- Alert if no data entered today -->
+            <div id="noDataAlert" class="data-alert">
+                <div class="alert-message">
+                    <span>⚠️ You haven't added today's carbon data</span>
+                </div>
+                <button id="addDataBtn" class="add-data-button">➕ Add Today's Data</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Total Carbon Footprint Tile -->
+                <div class="carbon-summary-card">
+                    <div class="card-header">
+                        <h2>Total Carbon Footprint</h2>
+                        <div class="time-filter">
+                            <span id="timeFilter">(This Month)</span>
+                            <select id="filterDropdown">
+                                <option value="month" selected>Month</option>
+                                <option value="day">Day</option>
+                                <option value="week">Week</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="carbon-total">
+                        <p id="totalCarbon">0 kg CO2</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activities Section -->
+                <div class="activities-card">
+                    <h2>📌 Recent Activities</h2>
+                    <ul id="recentActivities" class="activity-list">
+                        <!-- Activities will be populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="firebase.js"></script>
+
+    <!-- Dashboard Logic -->
+    <script src="dashboard.js"></script>
+</body>
+</html>
