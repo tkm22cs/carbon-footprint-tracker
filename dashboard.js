@@ -12,154 +12,248 @@ document.addEventListener("DOMContentLoaded", function () {
 function initializeDashboard(user) {
     const db = firebase.firestore();
     
-    // Set welcome message
-    if (document.getElementById("welcomeMessage")) {
-        document.getElementById("welcomeMessage").innerText = `Welcome, ${user.email}!`;
-    }
-
+    // Dashboard elements
+    const welcomeMessage = document.getElementById("welcomeMessage");
     const totalCarbonElement = document.getElementById("totalCarbon");
     const recentActivitiesList = document.getElementById("recentActivities");
     const noDataAlert = document.getElementById("noDataAlert");
     const filterDropdown = document.getElementById("filterDropdown");
     const timeFilterLabel = document.getElementById("timeFilter");
+    const addDataBtn = document.getElementById("addDataBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (welcomeMessage) {
+        welcomeMessage.innerText = `Welcome, ${user.email}!`;
+    }
+
+    // Date utility functions
+    function getTodayDate() {
+        const now = new Date();
+        // Convert to local date string in YYYY-MM-DD format
+        return now.getFullYear() + '-' + 
+               String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(now.getDate()).padStart(2, '0');
+    }
+    
+    function getStartOfWeek() {
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const diff = now.getDate() - dayOfWeek;
+        const startOfWeek = new Date(now.setDate(diff));
+        return startOfWeek.getFullYear() + '-' + 
+               String(startOfWeek.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(startOfWeek.getDate()).padStart(2, '0');
+    }
+    
+    function getStartOfMonth() {
+        const now = new Date();
+        return now.getFullYear() + '-' + 
+               String(now.getMonth() + 1).padStart(2, '0') + '-01';
+    }
+    
+    function getStartOfYear() {
+        const now = new Date();
+        return now.getFullYear() + '-01-01';
+    }
+    
+    function formatDate(dateStr) {
+        const [year, month, day] = dateStr.split('-');
+        const date = new Date(year, month - 1, day);
+        return date.toLocaleDateString(undefined, { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+
+    // Function to update alert section
+    function updateAlertSection(hasTodayData, justAdded = false) {
+        if (!noDataAlert) return;
+
+        const lastDataDate = localStorage.getItem('lastDataDate');
+        const today = getTodayDate();
+        
+        console.log("Last data date:", lastDataDate);
+        console.log("Today's date:", today);
+        console.log("Has today's data:", hasTodayData);
+        console.log("Just added:", justAdded);
+
+        if (hasTodayData) {
+            // Store today's date when data is added
+            if (justAdded) {
+                localStorage.setItem('lastDataDate', today);
+            }
+
+            // Show success message if data was added today
+            noDataAlert.innerHTML = `
+                <div class="alert-content success">
+                    <span class="alert-icon">✅</span>
+                    <span>Today's data has been added successfully!</span>
+                </div>`;
+            noDataAlert.classList.remove('hidden');
+        } else {
+            // Clear last data date if it's a new day
+            if (lastDataDate && lastDataDate !== today) {
+                localStorage.removeItem('lastDataDate');
+            }
+
+            // Show "Add Today's Data" button
+            noDataAlert.innerHTML = `
+                <div class="alert-content">
+                    <span class="alert-icon">⚠️</span>
+                    <span>You haven't added today's carbon data</span>
+                </div>
+                <button id="addDataBtn" class="add-data-btn">➕ Add Today's Data</button>`;
+            noDataAlert.classList.remove('hidden');
+            
+            // Reattach event listener to new button
+            const newAddDataBtn = document.getElementById("addDataBtn");
+            if (newAddDataBtn) {
+                newAddDataBtn.addEventListener("click", () => {
+                    window.location.href = "add-data.html";
+                });
+            }
+        }
+    }
 
     // Load dashboard data based on filter
-    function loadDashboardData(filter = "month") {
-        console.log("Loading data with filter:", filter);
+    function loadDashboardData(filter = "month", justAdded = false) {
+        console.log("Loading dashboard data with filter:", filter);
         
-        // Update filter label
+        // Get the appropriate date range based on filter
+        let startDate;
+        let filterLabel;
+        
         switch(filter) {
-            case "day": 
-                timeFilterLabel.innerText = "(Today)";
+            case "day":
+                startDate = getTodayDate();
+                filterLabel = "(Today)";
                 break;
-            case "week": 
-                timeFilterLabel.innerText = "(This Week)";
+            case "week":
+                startDate = getStartOfWeek();
+                filterLabel = "(This Week)";
                 break;
-            case "month": 
-                timeFilterLabel.innerText = "(This Month)";
+            case "month":
+                startDate = getStartOfMonth();
+                filterLabel = "(This Month)";
                 break;
-            case "year": 
-                timeFilterLabel.innerText = "(This Year)";
+            case "year":
+                startDate = getStartOfYear();
+                filterLabel = "(This Year)";
                 break;
+            default:
+                startDate = getStartOfMonth();
+                filterLabel = "(This Month)";
         }
         
-        // Get today's date for checking if today's data exists
-        const today = new Date().toISOString().split('T')[0];
+        if (timeFilterLabel) {
+            timeFilterLabel.innerText = filterLabel;
+        }
         
+        console.log("Fetching data from", startDate, "to now");
+        
+        const today = getTodayDate();
+        console.log("Today's date:", today);
+        
+        // Fetch user's carbon data
         db.collection("carbon_data")
             .where("userId", "==", user.uid)
-            .orderBy("date", "desc")
             .get()
             .then(snapshot => {
                 let totalCarbon = 0;
-                let activitiesHTML = "";
-                let todayDataExists = false;
+                let activities = [];
+                let hasTodayData = false;
                 
                 if (snapshot.empty) {
-                    console.log("No data found");
-                    recentActivitiesList.innerHTML = '<li style="text-align: center;">No activities recorded yet</li>';
+                    console.log("No carbon data found");
+                    recentActivitiesList.innerHTML = `<li class="empty-message">No activities recorded yet</li>`;
                 } else {
-                    console.log(`Found ${snapshot.size} records`);
-                    
                     snapshot.forEach(doc => {
                         const data = doc.data();
-                        const date = data.date; // YYYY-MM-DD format
-                        const co2 = parseFloat(data.co2Amount);
+                        const entryDate = data.date;
                         
-                        // Check if today's data exists
-                        if (date === today) {
-                            todayDataExists = true;
+                        console.log("Entry date:", entryDate);
+                        
+                        if (entryDate === today) {
                             console.log("Found today's data");
+                            hasTodayData = true;
                         }
                         
-                        // Filter data based on selected time period
-                        let includeInFilter = false;
-                        
-                        switch(filter) {
-                            case "day":
-                                includeInFilter = (date === today);
-                                break;
-                            case "week":
-                                const weekAgo = new Date();
-                                weekAgo.setDate(weekAgo.getDate() - 7);
-                                includeInFilter = (new Date(date) >= weekAgo);
-                                break;
-                            case "month":
-                                const currentMonth = new Date().getMonth();
-                                const currentYear = new Date().getFullYear();
-                                const recordDate = new Date(date);
-                                includeInFilter = (recordDate.getMonth() === currentMonth && 
-                                                 recordDate.getFullYear() === currentYear);
-                                break;
-                            case "year":
-                                const thisYear = new Date().getFullYear();
-                                includeInFilter = (new Date(date).getFullYear() === thisYear);
-                                break;
-                        }
-                        
-                        if (includeInFilter) {
-                            // Add to total carbon
-                            totalCarbon += co2;
-                            
-                            // Format date for display
-                            const displayDate = new Date(date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric'
+                        if (entryDate >= startDate) {
+                            totalCarbon += parseFloat(data.co2Amount || 0);
+                            activities.push({
+                                date: entryDate,
+                                type: data.activityType,
+                                details: data.details,
+                                co2: parseFloat(data.co2Amount),
+                                timestamp: data.timestamp
                             });
-                            
-                            // Add to activities HTML
-                            activitiesHTML += `
-                                <li>
-                                    <div class="activity-details">
-                                        <span class="activity-type">${data.activityType}</span>
-                                        <span class="activity-date">${displayDate}</span>
-                                    </div>
-                                    <span class="activity-carbon">${data.co2Amount} kg CO2</span>
-                                </li>
-                            `;
                         }
                     });
                     
-                    // Update activities list
-                    if (activitiesHTML) {
+                    activities.sort((a, b) => {
+                        const dateCompare = b.date.localeCompare(a.date);
+                        if (dateCompare === 0 && a.timestamp && b.timestamp) {
+                            return b.timestamp - a.timestamp;
+                        }
+                        return dateCompare;
+                    });
+                    
+                    if (activities.length > 0) {
+                        const activitiesHTML = activities
+                            .slice(0, 10)
+                            .map(activity => `
+                                <li>
+                                    <div class="activity-details">
+                                        <span class="activity-type">${activity.type}</span>
+                                        <span class="activity-date">${formatDate(activity.date)}</span>
+                                    </div>
+                                    <span class="activity-carbon">${activity.co2.toFixed(2)} kg CO2</span>
+                                </li>
+                            `).join('');
                         recentActivitiesList.innerHTML = activitiesHTML;
                     } else {
-                        recentActivitiesList.innerHTML = '<li style="text-align: center;">No activities in this time period</li>';
+                        recentActivitiesList.innerHTML = `<li class="empty-message">No activities in this time period</li>`;
                     }
                 }
                 
-                // Update total carbon display
-                totalCarbonElement.innerText = `${totalCarbon.toFixed(1)} kg CO2`;
-                
-                // Show/hide the "no data" alert based on today's data
-                if (todayDataExists) {
-                    noDataAlert.classList.add("hidden");
-                } else {
-                    noDataAlert.classList.remove("hidden");
+                if (totalCarbonElement) {
+                    totalCarbonElement.innerText = `${totalCarbon.toFixed(1)} kg CO2`;
                 }
+                
+                updateAlertSection(hasTodayData, justAdded);
             })
             .catch(error => {
-                console.error("Error fetching data:", error);
-                recentActivitiesList.innerHTML = '<li style="text-align: center; color: red;">Error loading data</li>';
+                console.error("Error fetching carbon data:", error);
+                if (recentActivitiesList) {
+                    recentActivitiesList.innerHTML = `<li class="error-message">Error loading data: ${error.message}</li>`;
+                }
             });
     }
 
-    // Initialize with default (month) filter
-    loadDashboardData();
+    // Check URL parameters for success message
+    const urlParams = new URLSearchParams(window.location.search);
+    const justAdded = urlParams.get('added') === 'true';
+
+    // Initialize dashboard with default filter
+    loadDashboardData("month", justAdded);
     
     // Set up event listeners
-    filterDropdown.addEventListener("change", () => {
-        loadDashboardData(filterDropdown.value);
-    });
-    
-    document.getElementById("addDataBtn").addEventListener("click", () => {
-        window.location.href = "add-data.html";
-    });
-    
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        firebase.auth().signOut().then(() => {
-            window.location.href = "index.html";
+    if (filterDropdown) {
+        filterDropdown.addEventListener("change", () => {
+            loadDashboardData(filterDropdown.value);
         });
-    });
+    }
+    
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+            firebase.auth().signOut()
+                .then(() => {
+                    window.location.href = "index.html";
+                })
+                .catch(error => {
+                    console.error("Logout error:", error);
+                });
+        });
+    }
 }
