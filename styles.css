@@ -183,6 +183,12 @@ button:hover {
     align-items: center;
 }
 
+.alert-content.success {
+    color: #155724;
+    background-color: #d4edda;
+    border-left-color: #28a745;
+}
+
 .alert-icon {
     margin-right: 10px;
     font-size: 18px;
@@ -247,13 +253,33 @@ button:hover {
 }
 
 #filterDropdown {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: black;
-    padding: 6px 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #333;
+    padding: 6px 24px 6px 10px;
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    background-color: white;
+}
+
+#filterDropdown:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+#filterDropdown option {
+    background-color: white;
+    color: #333;
+    padding: 8px;
 }
 
 .carbon-value {
@@ -271,7 +297,7 @@ button:hover {
 /* Activity Section */
 .activity-section {
     background: white;
-    padding: 20px;
+        padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -516,12 +542,32 @@ body {
 
 #filterDropdown {
     background-color: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    padding: 0.3rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #333;
+    padding: 6px 24px 6px 10px;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 14px;
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    background-color: white;
+}
+
+#filterDropdown:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+#filterDropdown option {
+    background-color: white;
+    color: #333;
+    padding: 8px;
 }
 
 .carbon-total {
@@ -773,4 +819,141 @@ textarea {
     .activity-carbon {
         margin-top: 0.5rem;
     }
+}
+
+/* Add these styles to your existing styles.css file */
+
+.add-data-page {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.add-data-content {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.data-form-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.data-form-card h2 {
+    color: #2C7865;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.data-section {
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.data-section h3 {
+    color: #2C7865;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #444;
+}
+
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #2C7865;
+    box-shadow: 0 0 0 2px rgba(44, 120, 101, 0.2);
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.save-button {
+    background-color: #2C7865;
+    color: white;
+    border: none;
+    padding: 0.8rem 0;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    max-width: 300px;
+    font-weight: 500;
+}
+
+.save-button:hover {
+    background-color: #1a614f;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.8rem 0;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 0.8rem;
+    font-weight: 500;
+}
+
+.cancel-button:hover {
+    background-color: #5a6268;
+}
+
+.back-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9rem;
+}
+
+.back-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
