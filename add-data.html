@@ -7,95 +7,93 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="add-data-page">
-    <div class="page-container">
-        <header class="app-header">
-            <div class="header-logo">
-                <h1>🌍 EcoTrack</h1>
+
+    <header class="app-header">
+        <div class="header-logo">
+            <h1>🌍 EcoTrack</h1>
+            <p>Add Carbon Data</p>
+        </div>
+        <button id="backBtn" class="back-button">← Back to Dashboard</button>
+    </header>
+
+    <div class="add-data-content">
+        <div class="data-form-card">
+            <h2>📊 Track Your Carbon Footprint</h2>
+            
+            <!-- Date Input -->
+            <div class="form-group">
+                <label for="date">📅 Date:</label>
+                <input type="date" id="date" required>
             </div>
-            <button id="cancelBtn" class="back-button">Back to Dashboard</button>
-        </header>
 
-        <main class="add-data-content">
-            <div class="data-form-card">
-                <h2>➕ Add Your Carbon Data</h2>
-
-                <form id="carbonDataForm">
-                    <!-- Date Input -->
-                    <div class="form-group">
-                        <label for="date">📅 Date:</label>
-                        <input type="date" id="date" required>
-                    </div>
-
-                    <!-- Transport Section -->
-                    <div class="data-section">
-                        <h3>🚗 Transport</h3>
-                        <div class="form-group">
-                            <label for="transportType">Vehicle Type:</label>
-                            <select id="transportType">
-                                <option value="" disabled selected>Select Vehicle</option>
-                                <option value="Car (Petrol)">Car (Petrol)</option>
-                                <option value="Car (Diesel)">Car (Diesel)</option>
-                                <option value="Bus">Bus</option>
-                                <option value="Bike">Bike</option>
-                                <option value="Train">Train</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="transportDistance">Distance (km):</label>
-                            <input type="number" id="transportDistance" min="0" placeholder="Enter distance in km">
-                        </div>
-                    </div>
-
-                    <!-- Electricity Section -->
-                    <div class="data-section">
-                        <h3>⚡ Electricity</h3>
-                        <div class="form-group">
-                            <label for="electricitySource">Energy Source:</label>
-                            <select id="electricitySource">
-                                <option value="" disabled selected>Select Energy Source</option>
-                                <option value="Coal">Coal</option>
-                                <option value="Solar">Solar</option>
-                                <option value="Hydro">Hydro</option>
-                                <option value="Wind">Wind</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="electricityUsage">Usage (kWh):</label>
-                            <input type="number" id="electricityUsage" min="0" placeholder="Enter electricity in kWh">
-                        </div>
-                    </div>
-
-                    <!-- Waste Section -->
-                    <div class="data-section">
-                        <h3>🗑️ Waste</h3>
-                        <div class="form-group">
-                            <label for="wasteType">Waste Disposal Type:</label>
-                            <select id="wasteType">
-                                <option value="" disabled selected>Select Waste Type</option>
-                                <option value="Landfill">Landfill</option>
-                                <option value="Composting">Composting</option>
-                                <option value="Recycling">Recycling</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="wasteAmount">Amount (kg):</label>
-                            <input type="number" id="wasteAmount" min="0" placeholder="Enter waste in kg">
-                        </div>
-                    </div>
-
-                    <!-- Notes (Optional) -->
-                    <div class="form-group">
-                        <label for="notes">📝 Notes (Optional):</label>
-                        <textarea id="notes" placeholder="Enter any extra details"></textarea>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="form-actions">
-                        <button type="button" id="saveDataBtn" class="save-button">💾 Save Data</button>
-                    </div>
-                </form>
+            <!-- Transport Section -->
+            <div class="data-section">
+                <h3>🚗 Transport</h3>
+                <div class="form-group">
+                    <label for="transportType">Vehicle Type:</label>
+                    <select id="transportType">
+                        <option value="" disabled selected>Select Vehicle</option>
+                        <option value="Car (Petrol)">Car (Petrol)</option>
+                        <option value="Car (Diesel)">Car (Diesel)</option>
+                        <option value="Bike/Scooter">Bike/Scooter</option>
+                        <option value="Bus">Bus</option>
+                        <option value="Autorickshaw">Autorickshaw</option>
+                        <option value="Flight">Flight</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transportDistance">Distance (km):</label>
+                    <input type="number" id="transportDistance" placeholder="Enter distance in km" min="0" step="0.1">
+                </div>
             </div>
-        </main>
+
+            <!-- Electricity Section -->
+            <div class="data-section">
+                <h3>⚡ Electricity</h3>
+                <div class="form-group">
+                    <label for="electricitySource">Energy Source:</label>
+                    <select id="electricitySource">
+                        <option value="" disabled selected>Select Energy Source</option>
+                        <option value="Normal">Normal (Grid)</option>
+                        <option value="Solar">Solar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="electricityUsage">Usage (kWh):</label>
+                    <input type="number" id="electricityUsage" placeholder="Enter electricity in kWh" min="0" step="0.1">
+                </div>
+            </div>
+
+            <!-- Waste Section -->
+            <div class="data-section">
+                <h3>🗑️ Waste</h3>
+                <div class="form-group">
+                    <label for="wasteType">Waste Disposal Type:</label>
+                    <select id="wasteType">
+                        <option value="" disabled selected>Select Waste Type</option>
+                        <option value="Landfill">Landfill</option>
+                        <option value="Composting">Composting</option>
+                        <option value="Recycling">Recycling</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="wasteAmount">Amount (kg):</label>
+                    <input type="number" id="wasteAmount" placeholder="Enter waste in kg" min="0" step="0.1">
+                </div>
+            </div>
+
+            <!-- Notes (Optional) -->
+            <div class="form-group">
+                <label for="notes">📝 Notes (Optional):</label>
+                <textarea id="notes" placeholder="Enter any extra details"></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-actions">
+                <button id="saveDataBtn" class="save-button">💾 Save Data</button>
+                <button id="cancelBtn" class="cancel-button" style="margin-top: 10px; background-color: #6c757d;">❌ Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase Scripts -->
@@ -108,5 +106,6 @@
 
     <!-- Add Data Logic -->
     <script src="add-data.js"></script>
+
 </body>
 </html>
