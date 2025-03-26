@@ -2,15 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Check authentication
-    auth.onAuthStateChanged((user) => {
-        if (!user) {
-            // Redirect to login if not authenticated
-            window.location.href = "index.html";
-        }
-    });
-
-    // Get form elements
     const dateInput = document.getElementById("date");
     const transportType = document.getElementById("transportType");
     const transportDistance = document.getElementById("transportDistance");
@@ -22,16 +13,51 @@ document.addEventListener("DOMContentLoaded", function () {
     const saveDataBtn = document.getElementById("saveDataBtn");
     const cancelBtn = document.getElementById("cancelBtn");
 
-    // Set default date to today
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-    dateInput.value = formattedDate;
+    // Function to get formatted date string
+    function getFormattedDate(date) {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    }
 
-    // CO2 Calculation Formula (kg CO2 per unit)
+    // Set default date to today and max date to today
+    const today = new Date();
+    const formattedDate = getFormattedDate(today);
+    dateInput.value = formattedDate;
+    dateInput.max = formattedDate; // Prevent future dates
+
+    // Validate date when user changes it
+    dateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value + 'T00:00:00'); // Add time component for consistent comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time part for proper comparison
+        
+        if (selectedDate > today) {
+            alert("You cannot select future dates!");
+            this.value = formattedDate;
+        }
+    });
+
+    // Expanded CO2 Calculation Factors with more detailed options
     const co2Factors = {
-        transport: { "Car (Petrol)": 2.3, "Car (Diesel)": 2.7, "Bus": 1.5, "Bike": 0.5, "Train": 0.3 },
-        electricity: { "Coal": 0.9, "Solar": 0.0, "Hydro": 0.0, "Wind": 0.0 },
-        waste: { "Landfill": 1.2, "Composting": 0.3, "Recycling": 0.1 }
+        transport: {
+            "Car (Petrol)": 2.3,
+            "Car (Diesel)": 2.7,
+            "Bike/Scooter": 0.1,
+            "Bus": 1.5,
+            "Autorickshaw": 0.8,
+            "Flight": 0.255
+        },
+        electricity: {
+            "Normal": 0.82,  // India's grid average
+            "Solar": 0.05
+        },
+        waste: {
+            "Landfill": 1.2,
+            "Composting": 0.3,
+            "Recycling": 0.1,
+            "Incineration": 0.7
+        }
     };
 
     // Save Data to Firebase
@@ -42,68 +68,87 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Calculate CO2 Emissions
-        let transportCO2 = 0;
-        let electricityCO2 = 0;
-        let wasteCO2 = 0;
-        
-        // Transport calculation
-        if (transportType.value && transportDistance.value && transportDistance.value > 0) {
-            transportCO2 = parseFloat(transportDistance.value) * co2Factors.transport[transportType.value];
-        }
-        
-        // Electricity calculation
-        if (electricitySource.value && electricityUsage.value && electricityUsage.value > 0) {
-            electricityCO2 = parseFloat(electricityUsage.value) * co2Factors.electricity[electricitySource.value];
-        }
-        
-        // Waste calculation
-        if (wasteType.value && wasteAmount.value && wasteAmount.value > 0) {
-            wasteCO2 = parseFloat(wasteAmount.value) * co2Factors.waste[wasteType.value];
-        }
-
-        const totalCO2 = transportCO2 + electricityCO2 + wasteCO2;
-        
-        // Check if any data was entered
-        if (totalCO2 <= 0) {
-            alert("Please enter at least one type of carbon data!");
+        // Validate inputs
+        if (!dateInput.value) {
+            alert("Please select a date!");
             return;
         }
 
-        // Create activity description based on what was entered
-        let activityType = "";
+        // Calculate CO2 for each category
+        const transportCO2 = transportType.value && transportDistance.value ? 
+            (parseFloat(transportDistance.value) * co2Factors.transport[transportType.value]).toFixed(1) : 0;
         
-        if (transportCO2 > 0) {
-            activityType += `${transportType.value} (${transportDistance.value} km)`;
-        }
+        const electricityCO2 = electricitySource.value && electricityUsage.value ? 
+            (parseFloat(electricityUsage.value) * co2Factors.electricity[electricitySource.value]).toFixed(1) : 0;
         
-        if (electricityCO2 > 0) {
-            if (activityType) activityType += ", ";
-            activityType += `${electricitySource.value} Energy (${electricityUsage.value} kWh)`;
-        }
-        
-        if (wasteCO2 > 0) {
-            if (activityType) activityType += ", ";
-            activityType += `${wasteType.value} Waste (${wasteAmount.value} kg)`;
-        }
+        const wasteCO2 = wasteType.value && wasteAmount.value ? 
+            (parseFloat(wasteAmount.value) * co2Factors.waste[wasteType.value]).toFixed(1) : 0;
 
-        // Store in Firestore - format to match dashboard.js expectations
-        db.collection("carbon_data").add({
-            userId: user.uid,
-            date: dateInput.value,
-            activityType: activityType,
-            co2Amount: totalCO2.toFixed(1),
-            notes: notes.value || "",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(() => {
-            alert("✅ Data saved successfully!");
-            window.location.href = "dashboard.html";
-        })
-        .catch(error => {
-            console.error("Error saving data:", error);
-            alert("Error: " + error.message);
+        // Calculate total CO2
+        const totalCO2 = (parseFloat(transportCO2) + parseFloat(electricityCO2) + parseFloat(wasteCO2)).toFixed(1);
+
+        // Create individual entries for each category that has data
+        const entries = [];
+        
+        if (transportType.value && transportDistance.value) {
+            entries.push({
+                userId: user.uid,
+                date: dateInput.value,
+                activityType: `Transport (${transportType.value})`,
+                details: `${transportDistance.value} km`,
+                co2Amount: transportCO2,
+                notes: notes.value || "",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        if (electricitySource.value && electricityUsage.value) {
+            entries.push({
+                userId: user.uid,
+                date: dateInput.value,
+                activityType: `Electricity (${electricitySource.value})`,
+                details: `${electricityUsage.value} kWh`,
+                co2Amount: electricityCO2,
+                notes: notes.value || "",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        if (wasteType.value && wasteAmount.value) {
+            entries.push({
+                userId: user.uid,
+                date: dateInput.value,
+                activityType: `Waste (${wasteType.value})`,
+                details: `${wasteAmount.value} kg`,
+                co2Amount: wasteCO2,
+                notes: notes.value || "",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        // If no entries were created
+        if (entries.length === 0) {
+            alert("Please enter at least one activity!");
+            return;
+        }
+        
+        // Use a batch to add all entries
+        const batch = db.batch();
+        
+        entries.forEach(entry => {
+            const newDocRef = db.collection("carbon_data").doc();
+            batch.set(newDocRef, entry);
         });
+        
+        batch.commit()
+            .then(() => {
+                alert("✅ Data saved successfully!");
+                window.location.href = "dashboard.html?added=true";
+            })
+            .catch(error => {
+                console.error("Error saving data:", error);
+                alert("Error: " + error.message);
+            });
     });
 
     // Cancel button
