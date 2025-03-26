@@ -6,31 +6,32 @@
     <title>EcoTrack | Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-body">
     <div class="dashboard-container">
-        <header class="app-header">
-            <div class="header-logo">
+        <header class="dashboard-header">
+            <div class="logo-section">
                 <h1>🌍 EcoTrack</h1>
                 <p id="welcomeMessage">Welcome!</p>
             </div>
-            <button id="logoutBtn" class="logout-button">Logout</button>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
         </header>
 
         <main class="dashboard-content">
             <!-- Alert if no data entered today -->
-            <div id="noDataAlert" class="data-alert">
-                <div class="alert-message">
-                    <span>⚠️ You haven't added today's carbon data</span>
+            <div id="noDataAlert" class="alert">
+                <div class="alert-content">
+                    <span class="alert-icon">⚠️</span>
+                    <span>You haven't added today's carbon data</span>
                 </div>
-                <button id="addDataBtn" class="add-data-button">➕ Add Today's Data</button>
+                <button id="addDataBtn" class="add-data-btn">➕ Add Today's Data</button>
             </div>
 
-            <div class="dashboard-grid">
+            <div class="dashboard-main">
                 <!-- Total Carbon Footprint Tile -->
-                <div class="carbon-summary-card">
-                    <div class="card-header">
+                <div class="carbon-footprint-tile">
+                    <div class="tile-header">
                         <h2>Total Carbon Footprint</h2>
-                        <div class="time-filter">
+                        <div class="filter-section">
                             <span id="timeFilter">(This Month)</span>
                             <select id="filterDropdown">
                                 <option value="month" selected>Month</option>
@@ -40,15 +41,15 @@
                             </select>
                         </div>
                     </div>
-                    <div class="carbon-total">
+                    <div class="carbon-value">
                         <p id="totalCarbon">0 kg CO2</p>
                     </div>
                 </div>
 
                 <!-- Recent Activities Section -->
-                <div class="activities-card">
+                <div class="activity-section">
                     <h2>📌 Recent Activities</h2>
-                    <ul id="recentActivities" class="activity-list">
+                    <ul id="recentActivities" class="activities-list">
                         <!-- Activities will be populated by JavaScript -->
                     </ul>
                 </div>
